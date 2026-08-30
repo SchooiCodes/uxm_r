@@ -3,11 +3,34 @@ REM made by schooi (gh: schooicodes)
 REM manual operations to disinfect PCs from the u* xm injection miner
 REM dev start: 30/10/2025
 color 0f
-title U* XMRig Virus Removal ^| v1.1
+title U* XMRig Virus Removal ^| v1.2
 call :logo
 echo %TIME% [Console] ^| Start
-echo %TIME% [Console] ^| Checking for infection..
-if not exist "C:\Windows\System32\wsvcz" echo %TIME% [Warning] ^| Device seems clean, exiting.. & pause & exit
+echo %TIME% [Console] ^| Checking USB Drives..
+setlocal enabledelayedexpansion
+set "letters=CDEFGHIJKLMNOPQRSTUVWXYZ"
+for /L %%i in (0,1,23) do (
+    set "letter=!letters:~%%i,1!"
+    if exist "!letter!:\sysvolume" (
+        for /f "usebackq delims=" %%N in (`powershell -NoProfile -Command "(Get-Disk -Number (Get-Partition -DriveLetter !letter!).DiskNumber).FriendlyName"`) do (
+			echo %TIME% [Console] ^| !letter!:\ is infected, attempting automatic recovery..
+            if exist "!letter!:\%%N" (
+				for /f "tokens=1 delims= " %%a in ('attrib "E:\Intenso Rainbow Line"') do if "%%a"=="SH" (
+					echo %TIME% [Console] ^| Removing infected folder ^(sysvolume^)..
+					rd /s /q "!letter!:\sysvolume" 
+					echo %TIME% [Console] ^| Unhiding USB files..
+					attrib -s -h "!letter!:\%%N" 
+					if exist "!letter!:\%%N.lnk" echo %TIME% [Console] ^| Deleting shortcut remnant.. & del /q "!letter!:\%%N.lnk"
+				)
+			)
+			if NOT exist "!letter!:\%%N" (
+				echo %TIME% [Console] ^| Automatic recovery failed. Please consult the creator of this script.
+			)
+        )
+    )
+)
+echo %TIME% [Console] ^| Checking Windows installation..
+if not exist "C:\Windows\System32\wsvcz" echo %TIME% [Warning] ^| Device seems clean, press any key to exit.. & pause >nul & exit
 echo %TIME% [Console] ^| Device seems infected, initiating removal..
 cd "C:\Windows\System32"
 for /f %%a in ('dir %SystemRoot%\System32\u??????.dll /b ^| findstr /R /C:"^u[0-9][0-9][0-9][0-9][0-9][0-9]\.dll$"') do set "serv=%%a"
@@ -57,9 +80,9 @@ exit
 :logo
 for /f "tokens=2,*delims=:" %%i in ('chcp') do set /a oldcp=%%i
 chcp 65001 >nul
-echo ██╗   ██╗██╗  ██╗███╗   ███╗        ██████╗ 
-echo ██║   ██║╚██╗██╔╝████╗ ████║        ██╔══██╗
-echo ██║   ██║ ╚███╔╝ ██╔████╔██║        ██████╔╝
+echo ██╗   ██╗██╗  ██╗███╗   ███╗        ██████╗  U* XMRig Injection Miner Remover
+echo ██║   ██║╚██╗██╔╝████╗ ████║        ██╔══██╗ Made by SchooiCodes
+echo ██║   ██║ ╚███╔╝ ██╔████╔██║        ██████╔╝ https://github.com/SchooiCodes/uxm_r
 echo ██║   ██║ ██╔██╗ ██║╚██╔╝██║        ██╔══██╗
 echo ╚██████╔╝██╔╝ ██╗██║ ╚═╝ ██║███████╗██║  ██║
 echo  ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
