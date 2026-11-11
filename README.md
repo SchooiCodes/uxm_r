@@ -1,6 +1,6 @@
 # UXM_R
 
-**U\* XMRig Injection Miner Remover** — a Windows batch script that detects and removes a specific XMRig-based cryptomining infection ("u\*" injection xmrig miner), including its USB propagation folders and the Windows System32 service/files it installs.
+**U\* XMRig Injection Miner Remover** — a Windows batch script that detects and removes a specific XMRig-based cryptomining infection (the "u\*" injection miner), including the files and service it installs in `System32` and the hidden folders it uses to spread over USB drives.
 
 ```
 ██╗   ██╗██╗  ██╗███╗   ███╗        ██████╗  U* XMRig Injection Miner Remover
@@ -11,37 +11,59 @@
  ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
 ```
 
+**Current version:** v1.3
+
 ## What it does
 
-`UXM_R.bat` walks through manual disinfection steps for PCs infected with the u\*xm injection miner:
+`UXM_R.bat` automates the manual disinfection steps for this miner. It runs in two phases:
 
-1. **Scans connected USB drives** (letters D–Z) for a hidden `sysvolume` folder used by the malware to spread, and attempts to automatically recover the original hidden files and remove the infected folder.
-2. **Checks the Windows installation** for the malware's telltale `C:\Windows\System32\wsvcz` folder to determine whether the machine is infected.
-3. **Locates and stops the malicious service**, matching the malware's `u######.dll` naming pattern in `System32`, then asks for confirmation before deleting it.
-4. **Finds and kills the miner executable** inside the `wsvcz` folder, asking for confirmation before terminating and deleting it.
-5. **Cleans up remaining artifacts**, removing the `wsvcz` folder and the injected `svctrl64.exe` system file.
+### 1. Windows cleanup
 
-The script prompts for confirmation before destructive file deletions and logs each step with a timestamp to the console.
+The script checks for the malware's telltale folder, `C:\Windows\System32\wsvcz`. If it isn't there, the machine is treated as clean and this phase is skipped. Otherwise:
+
+1. **Finds the malicious service DLL** in `System32`, matching the pattern `u` + six digits (e.g. `u123456.dll`), then stops and deletes the service of the same name.
+2. **Deletes the DLL** after asking for confirmation.
+3. **Finds the miner executable** (`u*.exe`) inside `wsvcz`, asks for confirmation, kills the process, and deletes it.
+4. **Removes the `wsvcz` folder** and the injected `svctrl64.exe` system file.
+
+### 2. USB drive cleanup
+
+The script scans drive letters **C–Z** for a hidden `sysvolume` folder. For each infected drive it:
+
+1. Removes the `sysvolume` folder.
+2. Restores the original folder's visibility (clears the System/Hidden attributes).
+3. Deletes the fake `.lnk` shortcut that replaced it.
+
+If a folder/shortcut pair doesn't match the expected attribute pattern, the script leaves it alone and tells you so rather than guessing.
+
+Every step is logged to the console with a timestamp.
 
 ## Usage
 
-1. Download or clone this repository.
-2. Right-click `UXM_R.bat` and **Run as administrator** (administrator privileges are required to stop services and modify files in `System32`).
-3. Follow the on-screen prompts.
-
-```
-git clone https://github.com/SchooiCodes/uxm_r.git
-cd uxm_r
-```
+1. Download or clone this repository:
+   ```
+   git clone https://github.com/SchooiCodes/uxm_r.git
+   cd uxm_r
+   ```
+2. Plug in any USB drives you want checked.
+3. Run `UXM_R.bat`. If it isn't already elevated, it relaunches itself with a UAC prompt (or right-click → **Run as administrator**).
+4. Answer the `Y/N` prompts. Answering `N` aborts the script.
 
 ## Requirements
 
-- Windows with `cmd.exe` and PowerShell available (PowerShell is used to identify infected USB disks).
-- Administrator privileges.
+- Windows with `cmd.exe`
+- PowerShell (used to relaunch the script with administrator rights)
+- Administrator privileges (needed to stop services and modify `System32`)
+
+## Notes and limitations
+
+- **Targets one specific variant.** It looks for the exact file names and folders listed above. A modified or different miner won't be detected.
+- **The service is stopped and deleted before the DLL confirmation prompt.** Only the DLL deletion itself is gated by the prompt.
+- It does not replace antivirus. After running it, a full scan with an up-to-date scanner is a good idea.
 
 ## Disclaimer
 
-This tool performs direct, irreversible modifications to system files and services (service deletion, file deletion). Use at your own risk, review the script before running it, and make sure you understand what it is removing. This project is provided "as is," with no warranty — see [LICENSE](LICENSE).
+This tool makes direct, irreversible changes to system files and services. Read the script before running it, understand what it removes, and use it at your own risk. Provided "as is" with no warranty — see [LICENSE](LICENSE).
 
 ## License
 

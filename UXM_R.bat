@@ -13,7 +13,7 @@ title U* XMRig Virus Removal ^| v1.3
 call :logo
 echo %TIME% [Console] ^| Start
 echo %TIME% [Console] ^| Checking Windows installation..
-if not exist "C:\Windows\System32\wsvcz" echo %TIME% [Warning] ^| Device seems clean, checking USB drives.. & goto usb
+if not exist "C:\Windows\System32\wsvcz" echo %TIME% [Console] ^| Device seems clean, checking USB drives.. & goto usb
 echo %TIME% [Warning] ^| Device seems infected, initiating removal..
 cd "C:\Windows\System32"
 for /f %%a in ('dir %SystemRoot%\System32\u??????.dll /b ^| findstr /R /C:"^u[0-9][0-9][0-9][0-9][0-9][0-9]\.dll$"') do set "serv=%%a"
@@ -59,7 +59,7 @@ for /L %%i in (0,1,23) do (
 					attrib -s -h "!letter!:\%%N" 
 					echo %TIME% [Console] ^| Deleting shortcut remnant.. & del /q "!letter!:\%%N.lnk"
 				) || (
-					echo %TIME% [Console] ^| "!letter!:\%%N" doesn't match SH attrib tests, please consult the creator of this script.
+					echo %TIME% [Warning] ^| "!letter!:\%%N" doesn't match SH attrib tests, please consult the creator of this script.
 				)
 			)
         )
