@@ -6,7 +6,7 @@ fltmc >nul 2>&1 || (
 	exit 0
 )
 REM made by schooi (gh: schooicodes)
-REM manual operations to disinfect PCs from the u* xm injection miner
+REM contains manual operations to disinfect PCs from the u* xm injection miner
 REM dev start: 30/10/2025
 color 0f
 title U* XMRig Virus Removal ^| v1.3
